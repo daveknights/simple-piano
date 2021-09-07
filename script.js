@@ -14,13 +14,32 @@ const notes = [
 	{src: 'Gsharp.mp3', id: 12, text: 'G♯/A♭'},
 	{src: 'Asharp.mp3', id: 13, text: 'A♯/B♭'},
 ];
-let canvas, stage, keyboard, noteText, keyX = 0;
+let canvas, stage, keyboard, textArea, keyX = 0;
+
+const loadingMessage = () => {
+	console.log('Loading...');
+	canvas = document.getElementById('canvas');
+	stage = new createjs.Stage(canvas);
+
+	textArea = new createjs.Text('Loading ...', '50px Arial', '#17964b');
+	textArea.textAlign = 'center';
+	textArea.regY = 25;
+	textArea.x = canvas.width / 2;
+	textArea.y = 70;
+
+	createjs.Tween.get(textArea, {loop: true})
+		.to({alpha: 0}, 1000)
+		.to({alpha: 1}, 1000);
+
+	stage.addChild(textArea);
+	createjs.Ticker.addEventListener('tick', tick);
+};
 
 const tick = event => stage.update(event);
 
 const showNote = note => {
-	noteText.text = note;
-	createjs.Tween.get(noteText)
+	textArea.text = note;
+	createjs.Tween.get(textArea)
 		.to({alpha: 1}, 250)
 		.to({scaleX: 3, scaleY: 3, alpha: 0}, 2000);
 };
@@ -39,23 +58,20 @@ const playNote = e => {
 
 	createjs.Sound.play(key.id);
 	// Reset note text values ready for next tween
-	noteText.alpha = 0;
-	noteText.scaleX = 1;
-	noteText.scaleY = 1;
+	textArea.alpha = 0;
+	textArea.scaleX = 1;
+	textArea.scaleY = 1;
 
 	keyPress(key);
 	showNote(key.name);
 };
 
 const init = () => {
-	canvas = document.getElementById('canvas');
-	stage = new createjs.Stage(canvas);
+	// Clear loading message text and remove tweens
+	textArea.text = '';
+	createjs.Tween.removeTweens(textArea);
+
 	createjs.Sound.registerSounds(notes, notesPath);
-	noteText = new createjs.Text('', '50px Arial', '#17964b');
-	noteText.textAlign = 'center';
-	noteText.regY = 25;
-	noteText.x = canvas.width / 2;
-	noteText.y = 70;
 
 	keyboard = new createjs.Container();
 	keyboard.y = 150;
@@ -83,18 +99,18 @@ const init = () => {
 		key.name = note.text;
 		key.id = note.id;
 
-		key.on("click", playNote);
+		key.on('click', playNote);
 		keyboard.addChild(key);
 	});
 
 	stage.addChild(keyboard);
-	stage.addChild(noteText);
-
-	createjs.Ticker.addEventListener('tick', tick);
 }
 
 const loadSounds = () => {
+	loadingMessage();
+
 	const preload = new createjs.LoadQueue();
+
 	preload.loadFile(`${notesPath}C.mp3`);
 	preload.loadFile(`${notesPath}Csharp.mp3`);
 	preload.loadFile(`${notesPath}D.mp3`);
