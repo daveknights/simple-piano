@@ -1,24 +1,20 @@
-const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'C'];
-const blackNotes = ['C♯/D♭', 'D♯/E♭', 'F♯/G♭', 'G♯/A♭', 'A♯/B♭'];
-const whiteKeyCount = 8, blackKeyCount = 5;
-const activeCount = whiteKeyCount + blackKeyCount;
 const notesPath = 'notes/';
 const notes = [
-	{src: 'C.mp3', id: 1, type: 'white'},
-	{src: 'D.mp3', id: 2, type: 'white'},
-	{src: 'E.mp3', id: 3, type: 'white'},
-	{src: 'F.mp3', id: 4, type: 'white'},
-	{src: 'G.mp3', id: 5, type: 'white'},
-	{src: 'A.mp3', id: 6, type: 'white'},
-	{src: 'B.mp3', id: 7, type: 'white'},
-	{src: 'topC.mp3', id: 8, type: 'white'},
-	{src: 'Csharp.mp3', id: 9, type: 'balck'},
-	{src: 'Dsharp.mp3', id: 10, type: 'balck'},
-	{src: 'Fsharp.mp3', id: 11, type: 'balck'},
-	{src: 'Gsharp.mp3', id: 12, type: 'balck'},
-	{src: 'Asharp.mp3', id: 13, type: 'balck'},
+	{src: 'C.mp3', id: 1, text: 'C'},
+	{src: 'D.mp3', id: 2, text: 'D'},
+	{src: 'E.mp3', id: 3, text: 'E'},
+	{src: 'F.mp3', id: 4, text: 'F'},
+	{src: 'G.mp3', id: 5, text: 'G'},
+	{src: 'A.mp3', id: 6, text: 'A'},
+	{src: 'B.mp3', id: 7, text: 'B'},
+	{src: 'topC.mp3', id: 8, text: 'C'},
+	{src: 'Csharp.mp3', id: 9, text: 'C♯/D♭'},
+	{src: 'Dsharp.mp3', id: 10, text: 'D♯/E♭'},
+	{src: 'Fsharp.mp3', id: 11, text: 'F♯/G♭'},
+	{src: 'Gsharp.mp3', id: 12, text: 'G♯/A♭'},
+	{src: 'Asharp.mp3', id: 13, text: 'A♯/B♭'},
 ];
-let canvas, stage, keyboard, noteText, whiteKeyX = 0, blackKeyX = 50;
+let canvas, stage, keyboard, noteText, keyX = 0;
 
 const tick = event => stage.update(event);
 
@@ -64,36 +60,32 @@ const init = () => {
 	keyboard = new createjs.Container();
 	keyboard.y = 150;
 
-	// Create white keys
-	for (let i = 0; i < whiteKeyCount; i++) {
-		const whiteKey = new createjs.Shape();
+	notes.forEach((note, i) => {
+		const key = new createjs.Shape();
 
-		whiteKey.graphics.beginFill('#fff').drawRoundRectComplex(whiteKeyX, 0, 80, 300, 0, 0, 5, 5);
+		if (i === 8) {
+			// Offset for first black key
+			keyX = 50;
+		}
 
-		whiteKey.name = whiteNotes[i];
-		whiteKey.id = i + 1;
+		if (i < 8) {
+			// White keys
+			key.graphics.beginFill('#fff').drawRoundRectComplex(keyX, 0, 80, 300, 0, 0, 5, 5);
 
-		whiteKey.on("click", playNote);
+			keyX += 81;
+		} else {
+			// Black keys
+			key.graphics.beginFill('#222').drawRoundRectComplex(keyX, 0, 60, 200, 0, 0, 10, 10);
+			// Cater for no E♯/F♭ key
+			i === 9 ? keyX += 161 : keyX += 81;
+		}
 
-		keyboard.addChild(whiteKey);
+		key.name = note.text;
+		key.id = note.id;
 
-		whiteKeyX += 81;
-	}
-	// Create black keys
-	for (let i = 0; i < blackKeyCount; i++) {
-		const blackKey = new createjs.Shape();
-
-		blackKey.graphics.beginFill('#222').drawRoundRectComplex(blackKeyX, 0, 60, 200, 0, 0, 10, 10);
-
-		blackKey.name = blackNotes[i];
-		blackKey.id = i + 9;
-
-		blackKey.on("click", playNote);
-
-		keyboard.addChild(blackKey);
-
-		i == 1 ? blackKeyX += 161 : blackKeyX += 81;
-	}
+		key.on("click", playNote);
+		keyboard.addChild(key);
+	});
 
 	stage.addChild(keyboard);
 	stage.addChild(noteText);
@@ -119,6 +111,4 @@ const loadSounds = () => {
 	preload.addEventListener('complete', init);
 }
 
-window.addEventListener('load', () => {
-	loadSounds();
-});
+window.addEventListener('load', () => loadSounds());
